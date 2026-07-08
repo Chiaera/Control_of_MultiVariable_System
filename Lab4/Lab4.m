@@ -149,11 +149,12 @@ end
 u_stdev = 0.1;
 
 % sensor noise deviation based on Exercise
-if fullStateMeasured
-    y_stdev = 0.05;
-else
-    y_stdev = 0.0;
-end
+% if fullStateMeasured
+%     y_stdev = 0.05;
+% else
+%     y_stdev = 0.0;
+% end
+y_stdev = 0.0;
 
 x_ol = x * 0; % ol means Open Loop
 x_ol(:,1) = x0;
@@ -368,9 +369,9 @@ xHat(end,k+1) - x(end,k+1)
 %% PLOTS COMMENTS
 
 % GENERAL - comparison Lab 3 with Lab 4
-% The nominal open-loop optimal input computed via the Gramian is exactly the same for all cases (Q1, Q3, Q4) because the system matrices and T are identical. 
-% The real difference in Lab 4 is the closed-loop feedback correction: -Kc*(error). 
-% The real trajectory changes based on the information used to calculate this error (true state, estimated state, or noisy state).
+    % The nominal open-loop optimal input computed via the Gramian is exactly the same for all cases (Q1, Q3, Q4) because the system matrices and T are identical. 
+    % The real difference in Lab 4 is the closed-loop feedback correction: -Kc*(error). 
+    % The real trajectory changes based on the information used to calculate this error (true state, estimated state, or noisy state).
 
 
 % Q1 - Q2: Closed loop (Real State) & Luenberger Observer
@@ -399,28 +400,33 @@ xHat(end,k+1) - x(end,k+1)
     %   At the beginning, the observer has a huge initial error. Because the controller trusts this wrong xHat (give error), 
     %   the real state and trajectory show a small initial deviation (transient). 
     %   Since the observer converges very fast, the controller stabilizes quickly and reaches the target perfectly.
-
+    %
     %   This proves that we can design the controller and observer independently. 
     %   The closed loop works and is stable even starting from a bad initial estimation.
-
+    %
     %   Final state error is still on the order of 10^-3, just slightly different from Q1 due to the different initial dynamic transient.
 
 
-% Q4 - Closed loop with Observer (Full State Measured + Noise)
-    %   We assume the whole state is measured (C = eye(6)) but sensors have noise (y_stdev = 0.05). 
-    %   The observer is trivial (xHat = y_noise).
+% Q4 - Closed loop with Observer (Full State Measured)
+    %   We assume the whole state is measured (C = eye(6)).
+    %   The observer is trivial (xHat = y): with a perfect, unfiltered
+    %   measurement of the whole state, there is nothing left to estimate, it simply copies the sensors reading.
 
-    %   State and Input: 
-    %   The position profiles successfully reach the target because the integration acts as a natural low-pass filter. 
-    %   he velocities and the inputs are very noisy. 
-    %   This happens because the controller reacts continuously to the raw noisy sensor data.
-
-    %   Trajectory: 
-    %       The path is mostly straight but shows micro-ripples caused by the noisy inputs continuously exciting the thrusters.
+    % State, Trajectory and Input: 
+    %   All three are smooth and clean, indistinguishable from Q1. 
+    %   Since xHat becomes exactly equal to the true state from the very first step, the feedback term -Kc*(x_ol - xHat) 
+    %   uses effectively perfect state information from t=0 onward, exactly like in Q1.
 
     %   State Estimation Error: 
-    %       Unlike Q1 and Q3, the estimation error plot does not converge to a flat zero line, but forms a noise band centered at zero, 
-    %       showing the stochastic noise injected at each step. Consequently, the printed "Final est error" is not exactly 0, 
-    %       but a random value on the order of 10^-2 (matching the noise standard deviation), which perfectly simulates real-world noisy sensor readings.    
+    %    Unlike Q3, there is no dynamic convergence here: 
+    %    the error drops from the initial offset to (numerically) zero in a single step, because xHat is not integrated through any error dynamics,
+    %    it is directly overwritten by the true measurement at every instant. 
+    %
+    %    The residual final error is on the order of 1e-3/1e-4, coming only from the Euler discretization step (dt), the same order of magnitude seen in Q1/Q3.
+
+    %   Comparison with Q3: 
+    %    Unlike Q3, here there is no unmeasured variable to reconstruct through the model: 
+    %    since the whole state (including velocities) is directly measured, xHat collapses onto x almost exactly, and the closed loop behaves 
+    %    essentially like Q1 from the very first instant.
 
     
