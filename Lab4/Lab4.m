@@ -415,9 +415,12 @@ xHat(end,k+1) - x(end,k+1)
     %   he velocities and the inputs are very noisy. 
     %   This happens because the controller reacts continuously to the raw noisy sensor data.
 
-    %   State Estimation Error: 
-    %       The error does not converge to a flat zero line, but forms a noise band centered at zero, showing the stochastic noise injected at each step.
-    
     %   Trajectory: 
     %       The path is mostly straight but shows micro-ripples caused by the noisy inputs continuously exciting the thrusters.
+
+    %   State Estimation Error: 
+    %       Unlike Q1 and Q3, the estimation error plot does not converge to a flat zero line, but forms a noise band centered at zero, 
+    %       showing the stochastic noise injected at each step. Consequently, the printed "Final est error" is not exactly 0, 
+    %       but a random value on the order of 10^-2 (matching the noise standard deviation), which perfectly simulates real-world noisy sensor readings.    
+
     
