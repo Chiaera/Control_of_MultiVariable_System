@@ -119,7 +119,6 @@ Kc(1:3,4:6) = diag([kc4, kc5, kc6]);
 % Q2. Luenberger Observer assuming that pose variables only are measured
 
 % Set Ko (observability) - to make the estimation converge
-
 Tau = 1;
 xi = 1;
 wn = 1;
@@ -138,11 +137,11 @@ kx6 = wn^2 - kx3*gamma/J;
 if fullStateMeasured
     % Q4. Closed Loop and Luenberger assuming that the whole state is measured 
     % xHat = y => Ko is multiplier-free
-    Ko_loop = zeros(6,6); 
+    Ko = zeros(6,6); 
 else
-    Ko_loop = zeros(6,3);
-    Ko_loop(1:3,1:3) = diag([kx1, kx2, kx3]);
-    Ko_loop(4:6,1:3) = diag([kx4, kx5, kx6]);
+    Ko = zeros(6,3);
+    Ko(1:3,1:3) = diag([kx1, kx2, kx3]);
+    Ko(4:6,1:3) = diag([kx4, kx5, kx6]);
 end
 
 %% SIMULATION
@@ -182,7 +181,7 @@ for k = 1:LL-1
         uref(:,k) = u_k; % OpenLoop considers only nominal u
     else
         if enableClosedLoopWithObserver % Q3 considering state estimation xHat
-            uref(:,k) = u_k - Kc * (x_ol(:,k) - xHat(:,k)); % corrective feedback: choose between the real one x and the estimate one xHat
+            uref(:,k) = u_k - Kc * (x_ol(:,k) - xHat(:,k)); % corrective feedback: choose between the nominal one x and the estimate one xHat
         else % Q1 real feedback of x
             uref(:,k) = u_k - Kc * (x_ol(:,k) - x(:,k));
         end 
@@ -207,7 +206,7 @@ for k = 1:LL-1
         u_obs_k = uref(:,k);
     
         % Luenberg observer
-        xdotHat = A * xHat(:,k) + B * u_obs_k + Ko_loop * (y_noise(:,k) - yHat(:,k));
+        xdotHat = A * xHat(:,k) + B * u_obs_k + Ko * (y_noise(:,k) - yHat(:,k));
         xHat(:,k+1) = xHat(:,k) + xdotHat * dt;
     
         % updated estimate output
@@ -382,7 +381,7 @@ xHat(end,k+1) - x(end,k+1)
     %   These correct behaviours show the efficacy of Kc that corrects the nominal optimal trajectory at every instant using perfect true state data.
     
     % Input: 
-    %       All the tensions are smooth and continue, without disconnection, confirming the optimal energy used.
+    %   All the tensions are smooth and continue, without disconnection, confirming the optimal energy used.
     
     % State Estimation Error (Q2):
     %   We assume to measure only pose variables. The observer starts with a high given initial error. 
